@@ -192,10 +192,17 @@ async function callGatewayLLM(systemPrompt, userPrompt) {
         messages: [{ role: 'user', content: userPrompt }],
       }),
     })
-    if (!res.ok) return null
+    if (!res.ok) {
+      const errBody = await res.text().catch(() => '')
+      pushLog?.('ui', `[DEBUG] callGatewayLLM failed: ${res.status} ${errBody.slice(0, 200)}`)
+      return null
+    }
     const data = await res.json()
     return data?.content?.[0]?.text || null
-  } catch { return null }
+  } catch (e) {
+    pushLog?.('ui', `[DEBUG] callGatewayLLM error: ${e.message}`)
+    return null
+  }
 }
 
 async function updateMagicDoc(doc, transcript) {

@@ -347,6 +347,11 @@ export async function runDream(workspaceDir, appSessionsPath, callLLM, pushLog) 
       .filter(s => s.lastModified > lastDreamAt && s.transcript?.length > 2)
       .slice(0, 10)
 
+    if (recentSessions.length === 0) {
+      pushLog?.('ui', '没有足够的对话记录可供整合，请多聊几轮后再试。', 'info')
+      return { summary: '没有需要整合的新对话', updates: 0 }
+    }
+
     const summaries = recentSessions.map(s => {
       const msgs = (s.transcript || []).slice(0, 8)
         .map(e => `${e.role}: ${(e.content || '').slice(0, 300)}`)
