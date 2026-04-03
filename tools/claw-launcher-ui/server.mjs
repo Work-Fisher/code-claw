@@ -616,6 +616,7 @@ function normalizeConfig(input = {}) {
     permissionMode,
     runner,
     outputFormat: 'json',
+    enableSoulInjection: next.enableSoulInjection !== false,
     channels: next.channels || {},
   }
 }
@@ -1583,6 +1584,7 @@ async function ensureGateway(config) {
       GATEWAY_PORT: String(config.gatewayPort),
       UPSTREAM_TEXT_MODE: config.textMode || 'openai',
       CLAW_WORKSPACE_DIR: config.workspaceDir || '',
+      CLAW_ENABLE_SOUL: config.enableSoulInjection ? '1' : '0',
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   })

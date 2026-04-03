@@ -11,6 +11,7 @@ export type ConfigState = {
   gatewayPort: number;
   permissionMode: 'read-only' | 'workspace-write' | 'danger-full-access';
   runner: 'auto' | 'cargo' | 'binary';
+  enableSoulInjection?: boolean;
 };
 
 export type SessionItem = {

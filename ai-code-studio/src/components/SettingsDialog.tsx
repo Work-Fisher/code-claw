@@ -366,6 +366,22 @@ export function SettingsDialog({
                   </label>
                 </div>
 
+                <label className="flex items-center gap-2 py-2">
+                  <input
+                    type="checkbox"
+                    checked={config.enableSoulInjection !== false}
+                    onChange={event =>
+                      setConfig(current => ({
+                        ...current,
+                        enableSoulInjection: event.target.checked,
+                      }))
+                    }
+                    className="h-4 w-4 rounded border-[#E6DCCD] accent-[#D4620A]"
+                  />
+                  <span className="text-[13px] text-[#6A5F53]">启用 SOUL 人格 &amp; 记忆注入</span>
+                  <span className="text-[11px] text-[#A89B8C]">（关闭可提升多轮对话稳定性）</span>
+                </label>
+
                 <label className="block space-y-1.5">
                   <span className="text-[12px] text-[#8E8376]">二进制路径</span>
                   <div className="flex gap-2">

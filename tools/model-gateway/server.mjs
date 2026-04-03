@@ -157,9 +157,10 @@ export async function startGatewayServer(overrides = {}) {
           }
         }
 
-        // ── Soul + Memory injection ──
-        const soulPrefix = loadSoulPrefix(config)
-        const memPrefix = loadMemoryPrefix(config)
+        // ── Soul + Memory injection (can be disabled via CLAW_ENABLE_SOUL=0) ──
+        const soulEnabled = process.env.CLAW_ENABLE_SOUL !== '0'
+        const soulPrefix = soulEnabled ? loadSoulPrefix(config) : ''
+        const memPrefix = soulEnabled ? loadMemoryPrefix(config) : ''
         const injected = [soulPrefix, memPrefix].filter(Boolean).join('\n\n')
         if (injected) {
           const existing = typeof body.system === 'string' ? body.system : ''
