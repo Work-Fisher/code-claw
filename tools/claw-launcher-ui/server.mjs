@@ -176,8 +176,12 @@ async function scanMagicDocs(dir, depth = 0) {
 
 async function callGatewayLLM(systemPrompt, userPrompt) {
   const gatewayUrl = state.gateway?.url
-  if (!gatewayUrl) return null
+  if (!gatewayUrl) {
+    pushLog('ui', '[记忆] Gateway 未就绪，无法调用 LLM', 'warn')
+    return null
+  }
   try {
+    pushLog('ui', `[记忆] 正在通过 Gateway 调用 LLM (${state.config.upstreamModel || 'default'})...`)
     const res = await fetch(`${gatewayUrl}/v1/messages`, {
       method: 'POST',
       headers: {
@@ -194,13 +198,17 @@ async function callGatewayLLM(systemPrompt, userPrompt) {
     })
     if (!res.ok) {
       const errBody = await res.text().catch(() => '')
-      pushLog?.('ui', `[DEBUG] callGatewayLLM failed: ${res.status} ${errBody.slice(0, 200)}`)
+      pushLog('ui', `[记忆] LLM 请求失败: HTTP ${res.status} — ${errBody.slice(0, 300)}`, 'warn')
       return null
     }
     const data = await res.json()
-    return data?.content?.[0]?.text || null
+    const text = data?.content?.[0]?.text || null
+    if (!text) {
+      pushLog('ui', `[记忆] LLM 返回了空内容，响应: ${JSON.stringify(data).slice(0, 300)}`, 'warn')
+    }
+    return text
   } catch (e) {
-    pushLog?.('ui', `[DEBUG] callGatewayLLM error: ${e.message}`)
+    pushLog('ui', `[记忆] LLM 调用异常: ${e.message}`, 'error')
     return null
   }
 }

@@ -339,8 +339,9 @@ export async function runDream(workspaceDir, appSessionsPath, callLLM, pushLog) 
 
   try {
     // Read recent sessions
-    const raw = await readFile(appSessionsPath, 'utf8')
-    const sessions = JSON.parse(raw)
+    let raw = '[]'
+    try { raw = await readFile(appSessionsPath, 'utf8') } catch { /* file may not exist yet */ }
+    const sessions = JSON.parse(raw || '[]')
     let lastDreamAt = 0
     try { lastDreamAt = Number(await readFile(lastDreamPath, 'utf8')) } catch { /* */ }
     const recentSessions = sessions
@@ -400,7 +401,10 @@ ${summaries}
 请分析并返回需要更新的记忆（JSON 格式）：`
 
     const result = await callLLM(systemPrompt, userPrompt)
-    if (!result) throw new Error('LLM returned empty result')
+    if (!result) {
+      pushLog?.('ui', '记忆整合：LLM 暂时无法响应，请稍后再试。', 'info')
+      return { ok: true, summary: '暂无法整合，请稍后再试' }
+    }
 
     // Parse JSON from result (handle markdown code blocks)
     let jsonStr = result
