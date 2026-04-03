@@ -1,0 +1,25 @@
+appId: local.claw-code.desktop
+productName: claw-code
+asar: false
+directories:
+  output: dist/electron-builder
+files:
+  - desktop/**/*
+  - tools/**/*
+  - ai-code-studio/dist/**/*
+  - claw-code/**/*
+  - "!claw-code/rust/target/**/*"
+  - claw-code/rust/target/release/claw.exe
+  - package.json
+extraMetadata:
+  main: desktop/main.mjs
+win:
+  icon: assets/claw-code.ico
+  artifactName: claw-code-${version}-${arch}.${ext}
+  target:
+    - target: dir
+      arch:
+        - x64
+    - target: portable
+      arch:
+        - x64

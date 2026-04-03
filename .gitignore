@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Environment & secrets
+.env
+.env.local
+.env*.local
+
+# Session data (personal conversation history)
+.claude/sessions/
+tools/*/data/app-sessions.json
+tools/*/data/runtime-state.json
+tools/*/data/settings.json
+
+# Memory logs (auto-generated, personal)
+.claw/memory/logs/
+.claw/memory/topics/
+.claw/memory/.last-dream
+.claw/memory/.dream-lock
+.claw/bootstrap/IDENTITY.md
+
+# Build outputs
+dist/
+*.exe
+target/
+
+# Legacy / recovered
+recovered-claude-code/
+.compatible-shell/
+
+# Logs
+*.log
+mock-openai.*.log

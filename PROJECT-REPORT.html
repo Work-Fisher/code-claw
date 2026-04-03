@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CODE-CLAW 项目报告 — OpenClaw 融合进化计划</title>
+<style>
+  :root { --bg: #FCF9F4; --card: #fff; --border: #E8DED2; --text: #241F17; --muted: #7C7266; --accent: #D4620A; --green: #16a34a; --red: #dc2626; --blue: #2563eb; --amber: #d97706; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+  h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .subtitle { font-size: 15px; color: var(--muted); margin-bottom: 40px; }
+  h2 { font-size: 22px; font-weight: 600; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+  h3 { font-size: 17px; font-weight: 600; margin: 24px 0 12px; }
+  p, li { font-size: 14px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin: 12px 0; }
+  .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .card-header .icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .card-header h4 { font-size: 15px; font-weight: 600; }
+  .card-header .badge { font-size: 11px; padding: 2px 8px; border-radius: 99px; font-weight: 500; }
+  .badge-done { background: #dcfce7; color: var(--green); border: 1px solid #bbf7d0; }
+  .badge-progress { background: #fef3c7; color: var(--amber); border: 1px solid #fde68a; }
+  .badge-todo { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
+  .badge-bug { background: #fef2f2; color: var(--red); border: 1px solid #fecaca; }
+  .badge-phase { background: #dbeafe; color: var(--blue); border: 1px solid #bfdbfe; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { background: #FAF6EF; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
+  code { background: #f5f0e8; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: 'JetBrains Mono', monospace; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; padding: 16px; }
+  .stat .num { font-size: 28px; font-weight: 700; color: var(--accent); }
+  .stat .label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .arch-box { background: #1a1a2e; color: #e0e0e0; border-radius: 12px; padding: 20px; font-family: monospace; font-size: 12px; line-height: 1.6; overflow-x: auto; white-space: pre; }
+  .file-tree { font-family: monospace; font-size: 12px; line-height: 1.8; padding: 16px; background: #faf7f0; border-radius: 10px; }
+  .file-tree .new { color: var(--green); font-weight: 600; }
+  .file-tree .mod { color: var(--blue); font-weight: 600; }
+  .timeline { position: relative; padding-left: 28px; }
+  .timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+  .timeline .dot { position: absolute; left: 2px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid; margin-top: 4px; }
+  .timeline .item { position: relative; margin-bottom: 20px; }
+  .dot-done { border-color: var(--green); background: #dcfce7; }
+  .dot-progress { border-color: var(--amber); background: #fef3c7; }
+  .dot-todo { border-color: #d1d5db; background: #f3f4f6; }
+  ul { padding-left: 20px; }
+  li { margin: 4px 0; }
+  .toc { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin: 24px 0; }
+  .toc a { color: var(--text); text-decoration: none; font-size: 13px; display: block; padding: 4px 0; }
+  .toc a:hover { color: var(--accent); }
+  .highlight { background: linear-gradient(120deg, #fef3c7 0%, #fde68a 100%); padding: 2px 4px; border-radius: 3px; }
+  @media (max-width: 768px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>🦞 CODE-CLAW <span>× OpenClaw</span> 融合报告</h1>
+<p class="subtitle">版本 0.2.0 · 2026-04-03 · 本地 AI 助手进化计划全景</p>
+
+<!-- TOC -->
+<div class="toc">
+  <strong style="font-size: 13px; color: var(--muted);">目录</strong>
+  <a href="#sec1">一、项目概述与原始架构</a>
+  <a href="#sec2">二、OpenClaw 研究：我们需要吸收什么</a>
+  <a href="#sec3">三、融合方案设计（3 Phase）</a>
+  <a href="#sec4">四、已完成的工作（Phase 1）</a>
+  <a href="#sec5">五、关键 Bug 修复记录</a>
+  <a href="#sec6">六、当前系统状态</a>
+  <a href="#sec7">七、后续详细计划（Phase 2 + 3）</a>
+  <a href="#sec8">八、文件清单</a>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec1">一、项目概述与原始架构</h2>
+
+<p>CODE-CLAW（小龙虾）是一个 <strong>本地部署的桌面 AI 编程助手</strong>，类似 Claude Code / Cursor，但完全自主可控。不绑定任何单一模型供应商，支持 DeepSeek、Kimi、通义千问、Gemini、OpenAI 等。</p>
+
+<h3>原始技术栈</h3>
+<table>
+  <tr><th>层</th><th>技术</th><th>文件</th></tr>
+  <tr><td>前端 UI</td><td>React 19 + TypeScript + Vite + Tailwind</td><td><code>ai-code-studio/</code></td></tr>
+  <tr><td>桌面壳</td><td>Electron 41</td><td><code>desktop/main.mjs</code></td></tr>
+  <tr><td>后端服务</td><td>原生 Node.js HTTP (3657 行)</td><td><code>tools/claw-launcher-ui/server.mjs</code></td></tr>
+  <tr><td>模型网关</td><td>协议适配 (Anthropic ↔ OpenAI/Gemini)</td><td><code>tools/model-gateway/server.mjs</code></td></tr>
+  <tr><td>AI 运行时</td><td>Rust 编译 claw.exe</td><td><code>claw-code/rust/target/release/claw.exe</code></td></tr>
+  <tr><td>通信</td><td>HTTP + SSE (Server-Sent Events)</td><td>前端通过 SSE 实时接收</td></tr>
+</table>
+
+<h3>原始架构图</h3>
+<div class="arch-box">
+Electron Desktop Shell
+    ↕ IPC (preload bridge)
+React Frontend (localhost:5173 dev / Electron prod)
+    ↕ HTTP + SSE (localhost:8891)
+server.mjs (claw-launcher-ui) ← 核心调度
+    ↕ spawn 进程
+claw.exe (Rust REPL 或单次 prompt)
+    ↕ fetch (localhost:8787)
+model-gateway (协议适配)
+    ↕ fetch
+上游 LLM API (Kimi / DeepSeek / OpenAI / Gemini...)
+</div>
+
+<h3>原始已完成功能</h3>
+<div class="grid-3">
+  <div class="card stat"><div class="num">14</div><div class="label">核心功能</div></div>
+  <div class="card stat"><div class="num">7</div><div class="label">Skill 文件</div></div>
+  <div class="card stat"><div class="num">11</div><div class="label">前端组件</div></div>
+</div>
+<table>
+  <tr><th>功能</th><th>状态</th></tr>
+  <tr><td>Electron 桌面壳 + Windows 便携版打包</td><td><span class="badge badge-done">✅ 已完成</span></td></tr>
+  <tr><td>首启向导 + 独立设置页</td><td><span class="badge badge-done">✅ 已完成</span></td></tr>
+  <tr><td>多模型网关 (OpenAI/Anthropic/Gemini 协议)</td><td><span class="badge badge-done">✅ 已完成</span></td></tr>
+  <tr><td>安全存储 API Key (Electron safeStorage)</td><td><span class="badge badge-done">✅ 已完成</span></td></tr>
+  <tr><td>多会话管理 (创建/切换/搜索/重命名/删除)</td><td><span class="badge badge-done">✅ 已完成</span></td></tr>
+  <tr><td>聊天界面 (消息/标签页/工具卡片)</td><td><span class="badge badge-done">✅ 已完成</span></td></tr>
+  <tr><td>工具调用 (通过 claw.exe)</td><td><span class="badge badge-done">✅ 已完成</span></td></tr>
+  <tr><td>高风险审批 + 运行队列</td><td><span class="badge badge-done">✅ 已完成</span></td></tr>
+  <tr><td>持久 REPL (长驻 claw.exe 进程)</td><td><span class="badge badge-done">✅ 已完成</span></td></tr>
+  <tr><td>诊断面板 + 日志面板</td><td><span class="badge badge-done">✅ 已完成</span></td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="sec2">二、OpenClaw 研究：我们需要吸收什么</h2>
+
+<p>OpenClaw 是一个 <strong>346K Stars</strong> 的开源个人 AI 助手操作系统，其能力远超简单的聊天机器人。以下是我们研究后整理的关键差距：</p>
+
+<table>
+  <tr><th>维度</th><th>CODE-CLAW 原始</th><th>OpenClaw</th><th>差距</th></tr>
+  <tr>
+    <td><strong>人格系统</strong></td>
+    <td>无</td>
+    <td>SOUL.md + IDENTITY.md + USER.md + AGENTS.md 多文件 bootstrap 链，20K/文件上限，150K 总上限，3 种 prompt mode，动态人格切换</td>
+    <td style="color:var(--red)">巨大</td>
+  </tr>
+  <tr>
+    <td><strong>记忆系统</strong></td>
+    <td>无</td>
+    <td>sqlite-vec 向量搜索 + BM25 关键词 + 混合检索 70/30 + 3 种可插拔后端 (Builtin/QMD/Honcho) + embedding 缓存 + 自动 flush</td>
+    <td style="color:var(--red)">巨大</td>
+  </tr>
+  <tr>
+    <td><strong>消息平台</strong></td>
+    <td>仅桌面</td>
+    <td>25+ 平台 (WhatsApp/Telegram/Slack/Discord/飞书/Signal/iMessage/Matrix...)</td>
+    <td style="color:var(--red)">巨大</td>
+  </tr>
+  <tr>
+    <td><strong>路由系统</strong></td>
+    <td>无</td>
+    <td>8 层级路由 (Peer→Parent→Wildcard→Guild+Roles→Guild→Team→Account→Channel)</td>
+    <td style="color:var(--amber)">中等</td>
+  </tr>
+  <tr>
+    <td><strong>插件 SDK</strong></td>
+    <td>7 个 Skill 文件</td>
+    <td>200+ plugin-sdk 导出，165+ 插件扩展，54 内置 Skill，ClawHub 市场 3200+ MCP Skill</td>
+    <td style="color:var(--red)">巨大</td>
+  </tr>
+  <tr>
+    <td><strong>MCP</strong></td>
+    <td>无</td>
+    <td>原生 MCP，3 种传输 (Stdio/SSE/Streamable HTTP)</td>
+    <td style="color:var(--amber)">中等</td>
+  </tr>
+  <tr>
+    <td><strong>上下文引擎</strong></td>
+    <td>简单 carry-over (最近 10 条)</td>
+    <td>ContextEngine (Assemble/Compact/Ingest)，压缩前自动 Memory Flush</td>
+    <td style="color:var(--amber)">中等</td>
+  </tr>
+  <tr>
+    <td><strong>安全沙箱</strong></td>
+    <td>权限模式 (read-only/write/full)</td>
+    <td>Docker 容器隔离，per-session 沙箱，SSRF 防护</td>
+    <td style="color:var(--amber)">中等</td>
+  </tr>
+  <tr>
+    <td><strong>语音</strong></td>
+    <td>无</td>
+    <td>TTS + Voice Wake + Talk Mode (Swift Swabble 包)</td>
+    <td style="color:var(--muted)">低优</td>
+  </tr>
+</table>
+
+<h3>OpenClaw 核心架构（Gateway 中心辐射）</h3>
+<div class="arch-box">
+                    ┌─ macOS App ─┐
+                    ├─ iOS App    ├─ WebSocket ─┐
+                    ├─ Android    │              │
+                    └─ CLI        ┘              │
+                                                 ▼
+WhatsApp ─┐                              ┌─────────────┐
+Telegram ─┤                              │   Gateway    │
+Discord  ─┤── Channel Plugins ──────────▶│  (控制平面)   │
+Slack    ─┤                              │  :18789 WS   │
+飞书     ─┤                              │  :18790 HTTP  │
+25+平台  ─┘                              └──────┬───────┘
+                                                │
+                        ┌───────────────────────┼────────────────┐
+                        ▼                       ▼                ▼
+                  ┌──────────┐          ┌──────────┐     ┌──────────┐
+                  │ Agent 1  │          │ Agent 2  │     │ Agent N  │
+                  │ 独立工作空间│          │ Docker沙箱│     │          │
+                  │ SOUL/Mem │          │          │     │          │
+                  └─────┬────┘          └──────────┘     └──────────┘
+                        │
+              ┌─────────┼─────────┐
+              ▼         ▼         ▼
+          40+ LLM    Tools     Skills
+          Providers  (Browser   (54内置 +
+                     Canvas     3200+ Hub)
+                     Cron...)
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec3">三、融合方案设计（3 Phase）</h2>
+
+<p>核心原则：<strong>以 CODE-CLAW 的 server.mjs 为主体框架</strong>，吸收 OpenClaw 的设计思想和架构模式（不抄代码），分阶段进化。</p>
+
+<div class="grid-3">
+  <div class="card">
+    <div class="card-header">
+      <div class="icon" style="background:#dcfce7;">🧬</div>
+      <div>
+        <h4>Phase 1: 灵魂 + 记忆</h4>
+        <span class="badge badge-done">已完成</span>
+      </div>
+    </div>
+    <ul>
+      <li>Bootstrap 人格系统 (SOUL.md)</li>
+      <li>持久记忆 (frontmatter 文件 + LLM 检索)</li>
+      <li>autoDream 记忆整合</li>
+      <li>MagicDocs 自动文档</li>
+      <li>前端 UI (SoulEditor + MemoryPanel)</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="icon" style="background:#dbeafe;">🔌</div>
+      <div>
+        <h4>Phase 2: 插件 + 向量搜索</h4>
+        <span class="badge badge-phase">计划中</span>
+      </div>
+    </div>
+    <ul>
+      <li>Plugin SDK 契约定义</li>
+      <li>sqlite-vec 向量记忆搜索</li>
+      <li>model-gateway /v1/embeddings</li>
+      <li>基础 MCP 支持</li>
+      <li>飞书消息通道</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="icon" style="background:#fef3c7;">🚀</div>
+      <div>
+        <h4>Phase 3: 引擎 + 多 Agent</h4>
+        <span class="badge badge-phase">计划中</span>
+      </div>
+    </div>
+    <ul>
+      <li>Context Engine (压缩 + flush)</li>
+      <li>Cron 调度引擎</li>
+      <li>飞书/钉钉/企微通道</li>
+      <li>多 Agent 路由</li>
+      <li>设备节点 (移动端)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec4">四、已完成的工作（Phase 1）</h2>
+
+<h3>Part A: Bootstrap 灵魂系统</h3>
+<div class="card">
+  <div class="card-header">
+    <div class="icon" style="background:#f3e8ff;">👻</div>
+    <div><h4>多文件 Bootstrap 链</h4><span class="badge badge-done">已完成</span></div>
+  </div>
+  <p>借鉴 OpenClaw 的 bootstrap 架构，实现了多文件人格注入链：</p>
+  <div class="file-tree">
+.claw/bootstrap/
+  SOUL.md          — 人格、价值观、行为边界（OpenClaw 官方模板格式）
+  IDENTITY.md      — 运行时元数据（自动生成：平台、时区、Node 版本）
+  USER.md          — 用户画像（可选，手动或 memory 自动填充）
+  CONTEXT.md       — 工作区上下文（可选）
+  </div>
+  <table>
+    <tr><th>实现</th><th>说明</th></tr>
+    <tr><td><code>bootstrap.mjs</code> (251 行)</td><td>加载/缓存/热重载，每文件 20K 上限，总 80K 上限</td></tr>
+    <tr><td>model-gateway Soul 注入</td><td>在 <code>/v1/messages</code> 入口 prepend 到 system prompt，优先级最高</td></tr>
+    <tr><td><code>SoulEditor.tsx</code></td><td>前端标签页编辑器，字符计数，保存/新建/删除</td></tr>
+    <tr><td>SettingsDialog "灵魂" 标签</td><td>集成到设置面板第 5 个标签页</td></tr>
+  </table>
+</div>
+
+<h3>Part B: 持久记忆系统</h3>
+<div class="card">
+  <div class="card-header">
+    <div class="icon" style="background:#fef3c7;">🧠</div>
+    <div><h4>分层记忆 + LLM 检索 + autoDream</h4><span class="badge badge-done">已完成</span></div>
+  </div>
+  <p>借鉴 OpenClaw 的 sqlite-vec 分层记忆架构，Phase 1 用 LLM 驱动检索（零原生依赖），Phase 2 加向量搜索。</p>
+  <div class="file-tree">
+.claw/memory/
+  MEMORY.md              — 记忆索引（≤200 行，每次加载）
+  .last-dream            — 上次整合时间戳
+  logs/
+    2026/04/
+      2026-04-03.md      — 每日交互日志（自动记录）
+  topics/
+    <span class="new">feedback-repl-stability.md</span>  — [feedback] REPL 稳定性问题
+    <span class="new">project-openclaw.md</span>         — [project] OpenClaw 项目追踪
+  </div>
+  <p><strong>4 种记忆类型</strong>（匹配 OpenClaw 分类）：</p>
+  <table>
+    <tr><th>类型</th><th>用途</th><th>示例</th></tr>
+    <tr><td><code>user</code></td><td>用户画像、偏好</td><td>偏好中文交流、主力模型 Kimi</td></tr>
+    <tr><td><code>feedback</code></td><td>行为纠正和确认</td><td>REPL 崩溃问题记录</td></tr>
+    <tr><td><code>project</code></td><td>项目上下文、决策</td><td>OpenClaw 项目追踪</td></tr>
+    <tr><td><code>reference</code></td><td>外部资源指针</td><td>文档链接、API 端点</td></tr>
+  </table>
+  <table>
+    <tr><th>实现</th><th>说明</th></tr>
+    <tr><td><code>memory.mjs</code> (470 行)</td><td>完整记忆系统：索引/日志/检索/Dream</td></tr>
+    <tr><td>LLM 相关性检索</td><td>发用户 query + 记忆清单给 LLM，选最相关 ≤5 个文件</td></tr>
+    <tr><td>autoDream (15 分钟定时)</td><td>空闲时自动整合近期会话到持久记忆</td></tr>
+    <tr><td>每日日志</td><td>对话结束自动追加 <code>logs/YYYY/MM/YYYY-MM-DD.md</code></td></tr>
+    <tr><td><code>MemoryPanel.tsx</code></td><td>记忆概览/编辑/搜索/手动整合 UI</td></tr>
+    <tr><td>6 个 API 端点</td><td>GET/POST/DELETE /api/memory/*, /api/memory/dream</td></tr>
+  </table>
+</div>
+
+<h3>Part C: MagicDocs 自动文档</h3>
+<div class="card">
+  <div class="card-header">
+    <div class="icon" style="background:#e0f2fe;">📄</div>
+    <div><h4>对话后自动更新标记文档</h4><span class="badge badge-done">已完成（原有）</span></div>
+  </div>
+  <p>标记为 <code># MAGIC DOC:</code> 的 .md 文件，对话结束后自动用 LLM 更新。10 分钟冷却防频繁写入。</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec5">五、关键 Bug 修复记录</h2>
+
+<div class="card">
+  <div class="card-header">
+    <div class="icon" style="background:#fef2f2;">🔧</div>
+    <h4>thinking/reasoning_content 协议兼容（严重）</h4>
+  </div>
+  <p><strong>现象</strong>：claw.exe 调用 WebSearch 等工具后 REPL 崩溃，退出码 1。</p>
+  <p><strong>根因</strong>：Kimi kimi-k2.5 是推理模型，要求对话历史中带 <code>tool_calls</code> 的 assistant 消息必须有 <code>reasoning_content</code> 字段。gateway 转换 Anthropic→OpenAI 格式时没有加这个字段，导致 Kimi 返回 400。</p>
+  <p><strong>修复</strong>：在 <code>model-gateway/server.mjs</code> 的 <code>anthropicMessagesToOpenAI()</code> 中，给带 tool_calls 的 assistant 消息加上 <code>reasoning_content: "ok"</code>。</p>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <div class="icon" style="background:#fef2f2;">🔧</div>
+    <h4>WebSearch 代理穿透</h4>
+  </div>
+  <p><strong>现象</strong>：claw.exe 的 WebSearch 工具无法访问 DuckDuckGo（被墙）。</p>
+  <p><strong>根因</strong>：Electron 桌面应用启动的子进程不继承终端代理环境变量。</p>
+  <p><strong>修复</strong>：<code>buildClawEnv()</code> 新增 <code>detectProxy()</code> 函数，先读环境变量，失败则从 Windows 注册表 <code>HKCU\...\Internet Settings\ProxyServer</code> 读取系统代理，传给 claw.exe。</p>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <div class="icon" style="background:#fef2f2;">🔧</div>
+    <h4>启动时重复创建新会话</h4>
+  </div>
+  <p><strong>现象</strong>：每次启动应用都创建空白新会话，看不到历史对话。</p>
+  <p><strong>修复</strong>：<code>main()</code> 中改为先 <code>refreshSessions()</code>，如果有已有会话就 <code>selectSession(latest)</code> 恢复最近会话。</p>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <div class="icon" style="background:#fef2f2;">🔧</div>
+    <h4>初始化页面误弹出</h4>
+  </div>
+  <p><strong>现象</strong>：API Key 已配置但每次启动仍显示"先完成初始化"。</p>
+  <p><strong>根因</strong>：<code>hasUnsavedConfig()</code> 比较 snapshot.config 和本地 config，API Key 在 Electron 加密存储中（磁盘上为空），导致永远不一致。</p>
+  <p><strong>修复</strong>：比较时忽略 <code>upstreamApiKey</code> 字段。</p>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <div class="icon" style="background:#fef2f2;">🔧</div>
+    <h4>bootstrap.mjs 导入错误</h4>
+  </div>
+  <p><strong>现象</strong>：启动崩溃，<code>unwatchFile</code> 不在 <code>node:fs/promises</code>。</p>
+  <p><strong>修复</strong>：<code>watchFile</code>/<code>unwatchFile</code> 从 <code>node:fs</code>（同步 API）导入。</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec6">六、当前系统状态</h2>
+
+<div class="grid-2">
+  <div class="card stat"><div class="num">2</div><div class="label">新增后端模块 (bootstrap.mjs + memory.mjs)</div></div>
+  <div class="card stat"><div class="num">2</div><div class="label">新增前端组件 (SoulEditor + MemoryPanel)</div></div>
+  <div class="card stat"><div class="num">2</div><div class="label">Bootstrap 文件 (SOUL.md + IDENTITY.md)</div></div>
+  <div class="card stat"><div class="num">2</div><div class="label">记忆文件 (topics/)</div></div>
+</div>
+
+<h3>进化后的架构</h3>
+<div class="arch-box">
+Electron Desktop Shell
+    ↕ IPC
+React Frontend + <span style="color:#4ade80;">SoulEditor</span> + <span style="color:#4ade80;">MemoryPanel</span>
+    ↕ HTTP + SSE (localhost:8891)
+server.mjs
+  ├─ <span style="color:#4ade80;">bootstrap.mjs</span>  ← 加载 .claw/bootstrap/*.md
+  ├─ <span style="color:#4ade80;">memory.mjs</span>     ← 记忆索引/检索/日志/Dream
+  ├─ Skill loader    ← .claude/commands/*.md
+  └─ MagicDocs       ← # MAGIC DOC: 自动更新
+    ↕ spawn
+claw.exe (Rust REPL)
+    ↕ fetch (localhost:8787)
+model-gateway
+  ├─ <span style="color:#4ade80;">Soul injection</span>        ← prepend bootstrap 到 system prompt
+  ├─ <span style="color:#4ade80;">reasoning_content 兼容</span> ← Kimi 推理模型适配
+  ├─ <span style="color:#4ade80;">API Key passthrough</span>   ← 请求头透传
+  └─ 协议适配 (Anthropic ↔ OpenAI/Gemini)
+    ↕ fetch
+上游 LLM (Kimi kimi-k2.5 / DeepSeek / etc.)
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec7">七、后续详细计划（Phase 2 + 3）</h2>
+
+<h3>Phase 2: 插件基础 + 向量搜索 + 消息通道</h3>
+
+<div class="timeline">
+
+  <div class="item">
+    <div class="dot dot-todo"></div>
+    <h4>2.1 sqlite-vec 向量记忆搜索</h4>
+    <p>替换 Phase 1 的 LLM 检索为混合检索：70% 向量相似度 + 30% BM25 关键词。</p>
+    <table>
+      <tr><th>任务</th><th>文件</th><th>说明</th></tr>
+      <tr><td>安装 better-sqlite3 + sqlite-vec</td><td><code>package.json</code></td><td>Native 模块，需要 node-gyp 编译</td></tr>
+      <tr><td>创建 memory-vector.mjs</td><td><code>tools/claw-launcher-ui/</code></td><td>~300 行，向量存储/检索/embedding 缓存</td></tr>
+      <tr><td>model-gateway /v1/embeddings</td><td><code>tools/model-gateway/server.mjs</code></td><td>代理上游 embedding API</td></tr>
+      <tr><td>memory.mjs 加 vector backend</td><td><code>tools/claw-launcher-ui/memory.mjs</code></td><td>有 embedding API 时用向量，否则降级 LLM</td></tr>
+      <tr><td>Embedding 提供者自动检测</td><td><code>memory-vector.mjs</code></td><td>OpenAI/Gemini/Voyage/Mistral</td></tr>
+    </table>
+  </div>
+
+  <div class="item">
+    <div class="dot dot-todo"></div>
+    <h4>2.2 Plugin SDK 契约</h4>
+    <p>定义 Channel / Provider / MemoryBackend 的标准接口，让扩展可以松耦合接入。</p>
+    <table>
+      <tr><th>任务</th><th>文件</th><th>说明</th></tr>
+      <tr><td>创建 SDK 定义</td><td><code>tools/claw-launcher-ui/plugins/sdk.mjs</code></td><td>Channel/Provider/MemoryBackend 接口</td></tr>
+      <tr><td>Plugin 注册表</td><td><code>plugins/registry.mjs</code></td><td>运行时动态加载/卸载插件</td></tr>
+      <tr><td>Plugin 配置 schema</td><td><code>plugins/config-schema.mjs</code></td><td>Zod 验证每个插件的配置</td></tr>
+    </table>
+  </div>
+
+  <div class="item">
+    <div class="dot dot-todo"></div>
+    <h4>2.3 基础 MCP 支持</h4>
+    <p>实现 Model Context Protocol server，把 conversations 暴露为 MCP 工具。</p>
+    <table>
+      <tr><th>任务</th><th>文件</th><th>说明</th></tr>
+      <tr><td>MCP server 模块</td><td><code>tools/claw-launcher-ui/mcp/server.mjs</code></td><td>Streamable HTTP 传输</td></tr>
+      <tr><td>暴露工具</td><td><code>mcp/tools.mjs</code></td><td>conversations_list, messages_read/send, events_poll</td></tr>
+      <tr><td>MCP 配置</td><td><code>settings.json</code></td><td>mcp.servers 配置节</td></tr>
+    </table>
+  </div>
+
+  <div class="item">
+    <div class="dot dot-todo"></div>
+    <h4>2.4 飞书消息通道（重做）</h4>
+    <p>基于 Plugin SDK 重新实现，解决 Phase 1 的配置保存/诊断问题。</p>
+    <table>
+      <tr><th>任务</th><th>文件</th><th>说明</th></tr>
+      <tr><td>Channel 基类</td><td><code>plugins/channels/channel.mjs</code></td><td>统一接口：start/stop/send/onMessage</td></tr>
+      <tr><td>飞书适配器</td><td><code>plugins/channels/feishu.mjs</code></td><td>Webhook + Token 管理 + @检测 + 群聊模式</td></tr>
+      <tr><td>Channel Manager</td><td><code>plugins/channels/manager.mjs</code></td><td>注册/启停/路由/回调</td></tr>
+      <tr><td>前端配置 UI</td><td><code>ChannelSettings.tsx</code></td><td>向导式配置，自动保存，诊断</td></tr>
+      <tr><td>回调机制</td><td><code>server.mjs</code></td><td>replyCallback 透传到 finalize</td></tr>
+    </table>
+  </div>
+
+</div>
+
+<h3>Phase 3: 上下文引擎 + 高级功能</h3>
+
+<div class="timeline">
+
+  <div class="item">
+    <div class="dot dot-todo"></div>
+    <h4>3.1 Context Engine</h4>
+    <p>对话压缩前自动 Memory Flush 防数据丢失。借鉴 OpenClaw 的 Assemble/Compact/Ingest 接口。</p>
+    <table>
+      <tr><th>任务</th><th>说明</th></tr>
+      <tr><td>创建 context-engine.mjs</td><td>注册式引擎，支持自定义压缩策略</td></tr>
+      <tr><td>Transcript rewriting</td><td>超长上下文时自动摘要替换旧消息</td></tr>
+      <tr><td>Memory flush before compact</td><td>压缩前把重要信息写入持久记忆</td></tr>
+      <tr><td>contextBudget 配置</td><td>可配置上下文 token 预算</td></tr>
+    </table>
+  </div>
+
+  <div class="item">
+    <div class="dot dot-todo"></div>
+    <h4>3.2 Cron 调度引擎</h4>
+    <p>持久化定时任务，支持通道投递。借鉴 OpenClaw 的 cron 系统。</p>
+    <table>
+      <tr><th>任务</th><th>说明</th></tr>
+      <tr><td>创建 cron.mjs</td><td>5 字段 crontab + interval 语法</td></tr>
+      <tr><td>持久化存储</td><td><code>.claw/cron/jobs.json</code></td></tr>
+      <tr><td>Session 目标</td><td>isolated（每次新建）/ current / named</td></tr>
+      <tr><td>投递模式</td><td>channel announce / webhook POST / none</td></tr>
+      <tr><td>指数退避</td><td>失败后 30s → 1m → 5m → 15m → 60m</td></tr>
+    </table>
+  </div>
+
+  <div class="item">
+    <div class="dot dot-todo"></div>
+    <h4>3.3 更多消息通道</h4>
+    <p>基于 Phase 2 的 Channel 接口，接入更多平台。</p>
+    <table>
+      <tr><th>通道</th><th>优先级</th><th>说明</th></tr>
+      <tr><td>飞书 / Lark</td><td>高</td><td>Phase 2.4 实现</td></tr>
+      <tr><td>钉钉 DingTalk</td><td>中</td><td>企业 webhook + 机器人 API</td></tr>
+      <tr><td>企业微信 WeCom</td><td>中</td><td>应用消息 API</td></tr>
+      <tr><td>Telegram</td><td>低</td><td>grammY 框架</td></tr>
+      <tr><td>Discord</td><td>低</td><td>discord.js</td></tr>
+    </table>
+  </div>
+
+  <div class="item">
+    <div class="dot dot-todo"></div>
+    <h4>3.4 多 Agent 路由</h4>
+    <p>借鉴 OpenClaw 的 binding 系统，不同通道/联系人路由到不同 Agent 实例。</p>
+    <table>
+      <tr><th>任务</th><th>说明</th></tr>
+      <tr><td>Agent 定义</td><td>每个 Agent 有独立 workspace、SOUL、Memory</td></tr>
+      <tr><td>Binding 系统</td><td>Peer → Guild → Team → Account → Channel 路由链</td></tr>
+      <tr><td>Session 隔离</td><td>不同 Agent 的会话互不干扰</td></tr>
+    </table>
+  </div>
+
+  <div class="item">
+    <div class="dot dot-todo"></div>
+    <h4>3.5 设备节点</h4>
+    <p>移动端 companion app 通过 WebSocket 连回 Gateway，暴露本地能力。</p>
+    <table>
+      <tr><th>能力</th><th>说明</th></tr>
+      <tr><td>通知</td><td>推送消息到手机</td></tr>
+      <tr><td>摄像头</td><td>拍照并返回</td></tr>
+      <tr><td>位置</td><td>获取 GPS 位置</td></tr>
+      <tr><td>命令执行</td><td>在设备上执行 shell 命令</td></tr>
+    </table>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec8">八、文件清单</h2>
+
+<h3>新增文件</h3>
+<div class="file-tree">
+<span class="new">tools/claw-launcher-ui/bootstrap.mjs</span>    — 251 行，Bootstrap 灵魂注入模块
+<span class="new">tools/claw-launcher-ui/memory.mjs</span>       — 470 行，持久记忆系统
+<span class="new">ai-code-studio/src/components/SoulEditor.tsx</span>   — Bootstrap 编辑器
+<span class="new">ai-code-studio/src/components/MemoryPanel.tsx</span>  — 记忆管理面板
+<span class="new">.claw/bootstrap/SOUL.md</span>                — OpenClaw 官方模板格式
+<span class="new">.claw/bootstrap/IDENTITY.md</span>             — 运行时元数据（自动生成）
+<span class="new">.claw/memory/MEMORY.md</span>                 — 记忆索引
+<span class="new">.claw/memory/topics/*.md</span>                — 持久记忆文件
+<span class="new">.claw/memory/logs/YYYY/MM/*.md</span>          — 每日交互日志
+</div>
+
+<h3>修改文件</h3>
+<div class="file-tree">
+<span class="mod">tools/claw-launcher-ui/server.mjs</span>      — 导入 bootstrap/memory，注入点，API 端点，代理检测，会话恢复
+<span class="mod">tools/model-gateway/server.mjs</span>         — Soul injection，reasoning_content 兼容，API Key passthrough
+<span class="mod">ai-code-studio/src/app/types.ts</span>        — BootstrapFile, MemoryManifestItem, MemoryFile 类型
+<span class="mod">ai-code-studio/src/app/helpers.ts</span>      — hasUnsavedConfig 忽略 API Key
+<span class="mod">ai-code-studio/src/components/SettingsDialog.tsx</span> — "灵魂" 标签页
+<span class="mod">ai-code-studio/src/components/SetupSidebar.tsx</span>  — Memory 按钮
+<span class="mod">ai-code-studio/src/App.tsx</span>             — MemoryPanel 集成
+</div>
+
+<hr style="margin-top: 48px; border: none; border-top: 1px solid var(--border);">
+<p style="text-align: center; font-size: 12px; color: var(--muted); margin-top: 16px;">
+  CODE-CLAW × OpenClaw 融合报告 · 2026-04-03 · 由 Claude Opus 4.6 生成
+</p>
+
+</div>
+</body>
+</html>

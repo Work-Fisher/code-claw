@@ -1,0 +1,9 @@
+{
+  "session_id": "a94e56e2f506489d8ed08bbae7c33b99",
+  "messages": [
+    "hello world",
+    "hello world"
+  ],
+  "input_tokens": 4,
+  "output_tokens": 24
+}

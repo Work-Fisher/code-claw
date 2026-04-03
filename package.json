@@ -1,0 +1,29 @@
+{
+  "name": "compatible-agent-shell-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Desktop launcher for the local claw-code runtime with provider-agnostic model routing.",
+  "author": "OpenAI Codex Workspace",
+  "type": "module",
+  "main": "desktop/main.mjs",
+  "scripts": {
+    "recover": "node scripts/recover-project.mjs",
+    "gateway": "node tools/model-gateway/server.mjs",
+    "claw-ui": "node tools/claw-launcher-ui/server.mjs",
+    "claw-desktop": "electron .\\desktop\\main.mjs",
+    "ai-code-studio:desktop": "electron .\\desktop\\main.mjs",
+    "recovered-ui": "node tools/recovered-launcher-ui/server.mjs",
+    "recovered-ui:smoke": "node scripts/smoke-recovered-ui.mjs",
+    "ai-code-studio:build": "npm --prefix ai-code-studio run build",
+    "ai-code-studio:dist": "npm run ai-code-studio:build && electron-builder --config electron-builder.yml --win portable dir --publish never",
+    "ai-code-studio:smoke": "node scripts/smoke-claw-code-desktop.mjs",
+    "ai-code-studio:start": "powershell -ExecutionPolicy Bypass -File .\\scripts\\start-ai-code-studio.ps1",
+    "ai-code-studio:package": "powershell -ExecutionPolicy Bypass -File .\\scripts\\package-ai-code-studio.ps1",
+    "compat-shell": "node compatible-shell/src/cli.mjs",
+    "compat-shell:smoke": "node scripts/smoke-compatible-shell.mjs"
+  },
+  "devDependencies": {
+    "electron": "^41.1.1",
+    "electron-builder": "^26.8.1"
+  }
+}
