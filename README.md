@@ -3,7 +3,7 @@
 **本地部署的个人 AI 编程助手** — 不绑定任何单一模型供应商，数据不出本机。
 
 > 支持 DeepSeek、Kimi、通义千问、豆包、智谱、Gemini、OpenAI 等所有 OpenAI 兼容的模型 API。
-
+> 记忆系统仍有问题，需要多轮对话后可保存，人格系统仍处于测试阶段
 ---
 
 ## 致谢
@@ -30,7 +30,7 @@
 
 ### Phase 1 已完成 ✅
 
-| 功能 | 说明 | 记忆系统仍有问题，需要多轮对话后可保存，人格系统仍处于测试阶段
+| 功能 | 说明 | 
 |------|------|
 | **SOUL 人格系统** | 参照 OpenClaw 的 bootstrap 链设计，实现了多文件人格注入（SOUL.md + IDENTITY.md + USER.md + CONTEXT.md），支持热重载、字符上限管控、设置页编辑器 |
 | **持久记忆系统** | 跨会话记忆，包含 MEMORY.md 索引、frontmatter 类型化记忆文件（user/feedback/project/reference 四类）、每日交互日志、LLM 驱动的 autoDream 记忆整合 |
